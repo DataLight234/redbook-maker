@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书爆款制造机·至尊极客版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+        body { font-family: 'Noto Sans SC', sans-serif; background-color: #f9f9f9; }
+        .chart-container { position: relative; width: 100%; max-width: 350px; margin: 0 auto; height: 280px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .category-pill.active { background-color: #ff2442; color: white; transform: scale(1.05); box-shadow: 0 4px 12px rgba(255, 36, 66, 0.3); }
+        .phone-mockup { width: 320px; height: 600px; border: 12px solid #1a1a1a; border-radius: 40px; background: white; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; }
+        .prompt-block { background-color: #1e1e1e; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; scrollbar-width: thin; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 36, 66, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 36, 66, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 36, 66, 0); } }
+        .btn-glow { animation: pulse-red 2s infinite; }
+        
+        /* 新增：定制化极简横向滚动条 */
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; cursor: pointer; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity" onclick="location.reload()" title="回到首页并刷新">
+                <div class="w-10 h-10 bg-gradient-to-br from-[#ff2442] to-[#ff5a71] rounded-xl flex items-center justify-center text-white font-black text-lg shadow-md shadow-rose-200">爆</div>
+                <span class="text-xl font-black tracking-tighter">爆款制造机 <span class="text-[#ff2442] font-light">PRO</span></span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100">
+                    <span class="mr-1 w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> 🌐 实时全网开放 API 接入中
+                </div>
+                <!-- 新增：DIY 自定义生成按钮 -->
+                <button onclick="openCustomModal()" class="hidden md:flex text-xs font-bold px-4 py-2 bg-rose-50 text-rose-600 rounded-full hover:bg-rose-100 transition-all border border-rose-100">✨ DIY 自定义</button>
+                <div class="relative hidden md:block">
+                    <input type="text" id="search-input" oninput="handleSearch()" placeholder="搜索爆款选题..." class="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-rose-500 w-64 transition-all">
+                    <span class="absolute left-3 top-2.5 opacity-40 text-xs">🔍</span>
+                </div>
+                <!-- 移动端 DIY 按钮 (仅在小屏幕显示) -->
+                <button onclick="openCustomModal()" class="md:hidden text-xs font-bold px-3 py-2 bg-rose-50 text-rose-600 rounded-full">✨ DIY</button>
+                
+                <button onclick="switchTab('explore')" class="text-xs font-bold px-4 py-2 bg-slate-900 text-white rounded-full hover:bg-rose-600 transition-all">流量中心</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <main class="pt-24 pb-20 px-6">
+        <div class="max-w-7xl mx-auto">
+            
+            <!-- 探索视图 -->
+            <section id="explore-view">
+                <div class="mb-10 text-center md:text-left">
+                    <h2 class="text-4xl font-black mb-3 tracking-tight">今日流量雷达</h2>
+                    <p class="text-slate-400 text-sm">已为您锁定 12 个领域的最优切入点，支持工业级指令一键导出。</p>
+                </div>
+
+                <!-- 分类 Pills (恢复横向滚动，并应用定制滚动条) -->
+                <div class="sticky top-16 z-40 bg-[#f9f9f9]/90 backdrop-blur pt-5 pb-3 mb-8 flex gap-3 overflow-x-auto custom-scrollbar border-b border-slate-50" id="category-pills">
+                    <!-- JS 注入 -->
+                </div>
+
+                <!-- 卡片网格 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="content-grid">
+                    <!-- JS 注入 -->
+                </div>
+            </section>
+
+            <!-- 实验室视图 (详情) -->
+            <section id="lab-view" class="hidden">
+                <div class="flex items-center space-x-4 mb-8">
+                    <button onclick="switchTab('explore')" class="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all">
+                        <span class="text-lg">⬅️</span>
+                    </button>
+                    <h2 class="text-2xl font-black italic">PRO 创作实验室</h2>
+                </div>
+
+                <div id="lab-content" class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                    <!-- JS 注入实验室详情 -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 吐司通知 -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 px-8 py-4 bg-slate-900 text-white rounded-2xl text-sm font-bold shadow-2xl opacity-0 transition-all duration-300 z-[120] pointer-events-none whitespace-nowrap">
+    </div>
+
+    <!-- 新增：DIY 自定义输入弹窗 -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[200] hidden flex items-center justify-center">
+        <div class="bg-white rounded-[32px] p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all scale-95 opacity-0" id="custom-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-black italic tracking-tight">DIY 专属热点</h3>
+                <button onclick="closeCustomModal()" class="text-slate-400 hover:text-slate-700 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">✖</button>
+            </div>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">核心内容 (关键词 / 标题 / 链接)</label>
+                    <textarea id="custom-input" rows="3" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none resize-none transition-all placeholder:text-slate-400" placeholder="例如：'2026搞钱思路'、'苹果发布会' 或 直接粘贴任何你想改写的新闻网页链接..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">选填：赛道或受众定位</label>
+                    <input type="text" id="custom-context" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all placeholder:text-slate-400" placeholder="例如：数码科技 / 美妆护肤 / 职场新人...">
+                </div>
+                <button onclick="submitCustom()" class="w-full py-4 bg-[#ff2442] text-white rounded-2xl font-black hover:bg-rose-700 transition-colors mt-2 shadow-lg shadow-rose-200">生成工业级指令 →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openCustomModal() {
+            const modal = document.getElementById('custom-modal');
+            const content = document.getElementById('custom-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeCustomModal() {
+            const modal = document.getElementById('custom-modal');
+            const content = document.getElementById('custom-modal-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function submitCustom() {
+            const inputVal = document.getElementById('custom-input').value.trim();
+            const contextVal = document.getElementById('custom-context').value.trim() || '专属定制';
+            
+            if(!inputVal) {
+                showToast("⚠️ 请输入关键词、标题或网页链接");
+                return;
+            }
+
+            closeCustomModal();
+
+            // 智能判断输入类型并构建伪热点对象，对接已有引擎
+            const isUrl = inputVal.startsWith('http://') || inputVal.startsWith('https://');
+            const shortTitle = isUrl ? '深度拆解此链接内容' : inputVal;
+            const coreLogic = isUrl 
+                ? `(特别指令：请大模型读取提供的URL链接内容，提取核心干货，去粗取精)。原文链接：${inputVal}` 
+                : `基于提供的话题，进行思维发散，利用反差或干货盘点逻辑，击中目标人群痛点。`;
+            
+            const customItem = {
+                t: shortTitle,
+                s: inputVal,
+                l: coreLogic,
+                sc: [
+                    Math.floor(Math.random() * 15 + 85), 
+                    Math.floor(Math.random() * 15 + 85), 
+                    Math.floor(Math.random() * 10 + 90), 
+                    Math.floor(Math.random() * 10 + 90)
+                ],
+                cat: contextVal,
+                url: isUrl ? inputVal : '#'
+            };
+
+            // 清空输入框以便下次使用
+            document.getElementById('custom-input').value = '';
+            document.getElementById('custom-context').value = '';
+
+            // 直接调用核心渲染引擎，进入实验室
+            openLab(customItem);
+            showToast("✨ 已为您生成 DIY 专属创作指令！");
+        }
+
+        // 定义实时抓取的全网热门资讯源映射
+        // 使用著名的开源服务 RSSHub，无需 Key 即可获取各大平台热榜数据
+        const feedMap = {
+            "微博 (社会热搜)": "https://rsshub.app/weibo/search/hot",
+            "知乎 (深度热榜)": "https://rsshub.app/zhihu/hotlist",
+            "Bilibili (全站热门)": "https://rsshub.app/bilibili/popular/all",
+            "36氪 (商业/AI)": "https://36kr.com/feed",
+            "少数派 (数字生活)": "https://sspai.com/feed",
+            "虎嗅 (商业前沿)": "https://rsshub.app/huxiu/article",
+            "豆瓣 (书影音)": "https://rsshub.app/douban/movie/playing",
+            "IT之家 (科技数码)": "https://rsshub.app/ithome/it"
+        };
+        
+        const categories = ["最新混排", ...Object.keys(feedMap)];
+        let activeCat = "最新混排";
+        let searchQuery = "";
+        let trendsCache = {};
+        let isLoading = false;
+
+        // 爆款逻辑模版库（用于为真实新闻自动匹配小红书运营逻辑）
+        const logicTemplates = [
+            "利用最新资讯打时间差，制造信息差优势，抢占首发流量。",
+            "切中当下时代焦虑与情绪共鸣，用犀利观点引发评论区站队探讨。",
+            "将硬核干货进行降维科普，配合极简步骤拆解，降低小白阅读门槛。",
+            "制造极大的视觉/认知反差，用'标题党'句式吸引黄金3秒点击。",
+            "盘点类大合集结构，提供极高的实用价值，疯狂诱导用户收藏。"
+        ];
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.replace('opacity-100', 'opacity-0');
+            }, 2500);
+        }
+
+        // 核心：调用完全免费、无需 Key 的 rss2json API 抓取真实数据
+        async function fetchLiveTrendsAPI(category) {
+            isLoading = true;
+            renderLoading();
+            
+            try {
+                let targetFeed = feedMap[category];
+                // 如果是最新混排，默认抓取 微博 作为首页展示
+                if (category === "最新混排") {
+                    targetFeed = feedMap["微博 (社会热搜)"];
+                }
+
+                // 使用免费开放的 RSS 转 JSON 服务
+                const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(targetFeed)}`;
+                
+                // 增加超时控制防卡死 (8秒)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                
+                const response = await fetch(apiUrl, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    // 解析真实新闻数据并转化为小红书热点结构
+                    const results = data.items.slice(0, 12).map((item, index) => {
+                        // 清除新闻描述中的 HTML 标签，提取纯文本
+                        const cleanDesc = item.description 
+                            ? item.description.replace(/<[^>]*>?/gm, '').substring(0, 90) + '...' 
+                            : '点击进入实验室生成深度解析...';
+                        
+                        return {
+                            t: item.title,
+                            s: cleanDesc,
+                            l: logicTemplates[index % logicTemplates.length], // 动态分配爆款逻辑
+                            sc: [
+                                Math.floor(Math.random() * 20 + 80), // 视觉
+                                Math.floor(Math.random() * 20 + 80), // 情绪
+                                Math.floor(Math.random() * 10 + 90), // 干货
+                                Math.floor(Math.random() * 15 + 85)  // 传播
+                            ],
+                            cat: category === "最新混排" ? "实时热点" : category.split(' ')[0],
+                            url: item.link
+                        };
+                    });
+                    isLoading = false;
+                    return results;
+                } else {
+                    throw new Error('API 数据解析异常');
+                }
+            } catch (error) {
+                console.warn("API网络拥堵或超时，已启用本地高分备用热点库:", error);
+                isLoading = false;
+                showToast("⚠️ 公共网络拥堵，已无缝切换至本地高分爆款库");
+                return getFallbackData(category);
+            }
+        }
+
+        // 本地备用爆款库，保证在公共 API 宕机、跨域拦截或限流时，产品依然能完美展现其核心逻辑
+        function getFallbackData(category) {
+            const fallbackDB = {
+                "微博": [
+                    { t: "当代年轻人刮起'反向消费'风潮", s: "不再追求大牌，主打实用主义。年轻人消费观的转变背后蕴含着巨大的下沉市场机会。" },
+                    { t: "周末'特种兵旅游'到底有多累", s: "为了打卡牺牲睡眠，这种新型旅游方式的真实体验反馈，引发共鸣与争议。" },
+                    { t: "打工人兴起'去班味'穿搭", s: "下班后通过穿搭找回自我，各种极具反差感的穿搭分享成为新晋流量密码。" },
+                    { t: "一线城市'抠门'生存指南", s: "各种极简生活、薅羊毛攻略汇总，切中都市年轻人的生存焦虑与省钱痛点。" },
+                    { t: "网红餐厅滤镜碎了，年轻人回归苍蝇馆子", s: "打破网红营销泡沫，主打真实味道的情绪共鸣，迎合消费降级趋势。" }
+                ],
+                "知乎": [
+                    { t: "2026年，普通人还有哪些副业风口？", s: "结合当下经济形势，深度盘点低门槛、高容错率的小微创业方向。" },
+                    { t: "如何克服严重的'精神内耗'？", s: "从心理学角度拆解内耗成因，提供切实可行的极简行动指南，引发大量收藏。" },
+                    { t: "AI工具对基层白领冲击到底有多大？", s: "深度测评真实工作场景下的AI提效，贩卖焦虑的同时提供AI工具清单解决方案。" },
+                    { t: "为什么很多人工作3年后会出现职业倦怠？", s: "剖析职场发展瓶颈期，提供转型建议与心态建设，直击职场人痛点。" },
+                    { t: "提前还房贷还是理财？年轻人陷入两难", s: "直击当下最热的财务焦虑话题，提供不同视角的干货分析。" }
+                ],
+                "Bilibili": [
+                    { t: "零基础10分钟搞懂大模型底层逻辑", s: "硬核干货的极简科普，配合趣味动画演示，降低观看门槛，狂赚硬币收藏。" },
+                    { t: "沉浸式体验：花100块能在县城吃多好", s: "县城物价与一线城市的强烈反差，充满烟火气的美食探店，引发强烈的向往与共鸣。" },
+                    { t: "打假爆款网红评测：交智商税了吗？", s: "犀利吐槽市面上爆火但鸡肋的产品，真实敢言的人设极易获得粉丝信任与站队。" },
+                    { t: "花一个月爆改出租屋，全网最详攻略", s: "低预算提升生活幸福感的改造全过程，极具视觉冲击力的前后对比，引发效仿。" },
+                    { t: "野生电子榨菜盘点：下饭必备神剧", s: "迎合年轻人的孤独经济与下饭需求，强情绪价值分享，互动率极高。" }
+                ],
+                "36氪": [
+                    { t: "AI 算力战升级，新一轮红利在哪", s: "AI大模型最新动态解读，前瞻性分析未来商业应用场景与搞钱机会。" },
+                    { t: "出海成为新必选项，中小企业怎么走", s: "解析最新出海赛道与低成本试错方案，打破信息差，提供高价值商业情报。" },
+                    { t: "银发经济爆发：老年人更愿意为什么买单", s: "颠覆认知的老年消费市场洞察，挖掘被忽视的细分赛道红利。" },
+                    { t: "新消费品牌集体'降级'，主打极致性价比", s: "深度拆解当前消费品市场的定价策略与营销玩法，为创业者提供思路借鉴。" },
+                    { t: "新能源汽车下半场：智能化到底谁在买单？", s: "拆解行业趋势与消费者真实心理，引发技术派与实用派的深度争论。" }
+                ],
+                "少数派": [
+                    { t: "2026高效数字工作流分享", s: "小众且极其好用的生产力软件大盘点，提供保姆级配置教程，干货满满。" },
+                    { t: "数字游民的真实体验：没有想象中美好", s: "打破滤镜，真实分享数字游民的孤独感与不确定性，反向操作吸引深度阅读。" },
+                    { t: "极简手机桌面布置：治愈信息焦虑", s: "兼具审美与实用性的桌面美化教程，迎合当下的极简审美与抗焦虑需求。" },
+                    { t: "智能家居避坑指南：买错亏上万", s: "以真实的踩坑血泪史，提供实用的避坑与选购建议，切中家居爱好者的痛点。" },
+                    { t: "如何优雅地备份你一生的数字资产？", s: "针对数字时代的核心痛点提供高阶干货指南，收藏率爆表的话题。" }
+                ],
+                "虎嗅": [
+                    { t: "新中产正在悄悄抛弃轻奢品牌", s: "剖析最新消费降级趋势，探讨高性价比平替产品如何占据市场主导权。" },
+                    { t: "AI 创业大退潮，到底谁赚到钱了？", s: "打破 AI 淘金神话，深度复盘真实赚钱的商业模式，干货满满。" },
+                    { t: "年轻人为什么不爱换手机了？", s: "解析数码消费市场的停滞，探讨手机功能过剩与消费心理的转变。" },
+                    { t: "咖啡赛道卷成红海，独立小店怎么活", s: "餐饮创业避坑指南，拆解社区店的生存逻辑与私域运营方法论。" },
+                    { t: "情绪劳动：被忽视的职场隐形剥削", s: "切中打工人痛点，深度分析职场心理耗竭的真相，引发海量转发共鸣。" }
+                ],
+                "豆瓣": [
+                    { t: "周末治愈片单：远离内耗的 2 个小时", s: "高分冷门佳片盘点，主打情绪抚慰与视觉审美，极其适合小红书收藏马甲。" },
+                    { t: "极简书单：今年读过最通透的 3 本书", s: "高质量阅读分享，提供知识干货与人生哲理，提升账号深度与粉丝粘性。" },
+                    { t: "被低估的小众神剧，一口气刷完太爽了", s: "利用信息差提供影视剧安利，解决剧荒痛点，评论区极易产生互动。" },
+                    { t: "女主角的穿搭审美，简直是职场教科书", s: "从热门影视切入穿搭赛道，图文并茂展示搭配巧思，极具种草属性。" },
+                    { t: "看完这部纪录片，治好了我的容貌焦虑", s: "结合影视内容探讨社会议题，引发女性群体深度共鸣与价值认同。" }
+                ],
+                "IT之家": [
+                    { t: "苹果新系统隐藏神技能，99%的人不知道", s: "利用信息差盘点数码小技巧，低门槛高实用性，诱导用户点赞收藏备用。" },
+                    { t: "旧手机别扔！花 50 块变身桌面神器", s: "变废为宝的极客硬核教程，充满反差感与实操性，极易成为现象级爆款。" },
+                    { t: "国产手机拍照已经卷到这个地步了？", s: "以强烈的视觉对比展示数码产品评测，引发不同品牌粉丝的评论区辩论。" },
+                    { t: "桌面 3.0 改造计划：电竞房终极形态", s: "极具视觉冲击力的桌面美学展示，配合外设清单，精准打击数码发烧友。" },
+                    { t: "这些被吹爆的网红数码配件，其实是智商税", s: "真实避坑吐槽，以反向测评建立专业、敢言的人设，获取粉丝信任。" }
+                ]
+            };
+
+            // 获取大类名称（如：从 "微博 (社会热搜)" 中提取 "微博"）
+            let key = category === "最新混排" ? "微博" : category.split(' ')[0];
+            let sourceList = fallbackDB[key] || fallbackDB["微博"];
+
+            return sourceList.map((item, index) => {
+                return {
+                    t: item.t,
+                    s: item.s,
+                    l: logicTemplates[index % logicTemplates.length],
+                    sc: [
+                        Math.floor(Math.random() * 20 + 80), 
+                        Math.floor(Math.random() * 20 + 80), 
+                        Math.floor(Math.random() * 10 + 90), 
+                        Math.floor(Math.random() * 15 + 85)
+                    ],
+                    cat: category === "最新混排" ? "实时热点" : key,
+                    url: "#"
+                };
+            });
+        }
+
+        async function init() {
+            const pillContainer = document.getElementById('category-pills');
+            pillContainer.innerHTML = '';
+            categories.forEach(c => {
+                const b = document.createElement('button');
+                b.className = `category-pill whitespace-nowrap px-6 py-2.5 rounded-2xl text-xs font-bold border border-slate-100 bg-white hover:border-rose-200 transition-all ${c === activeCat ? 'active' : ''}`;
+                b.innerText = c;
+                b.onclick = async () => { 
+                    if(isLoading) return; // 防止重复点击
+                    activeCat = c; 
+                    Array.from(pillContainer.children).forEach(btn => {
+                        btn.className = `category-pill whitespace-nowrap px-6 py-2.5 rounded-2xl text-xs font-bold border border-slate-100 bg-white hover:border-rose-200 transition-all ${btn.innerText === activeCat ? 'active' : ''}`;
+                    });
+                    await loadAndRenderCategory(); 
+                };
+                pillContainer.appendChild(b);
+            });
+            await loadAndRenderCategory();
+        }
+
+        async function loadAndRenderCategory() {
+            if (!trendsCache[activeCat]) {
+                const data = await fetchLiveTrendsAPI(activeCat);
+                if (data && data.length > 0) {
+                    trendsCache[activeCat] = data; // 存入缓存
+                }
+            }
+            render();
+        }
+
+        function renderLoading() {
+            const grid = document.getElementById('content-grid');
+            grid.innerHTML = Array(8).fill(0).map(() => `
+                <div class="bg-white rounded-[32px] p-7 border border-slate-100 shadow-sm animate-pulse flex flex-col">
+                    <div class="flex justify-between items-start mb-5">
+                        <div class="w-16 h-5 bg-rose-50 rounded-full"></div>
+                        <div class="w-16 h-5 bg-amber-50 rounded-md"></div>
+                    </div>
+                    <div class="h-5 bg-slate-200 rounded-md w-full mb-3"></div>
+                    <div class="h-5 bg-slate-200 rounded-md w-3/4 mb-6"></div>
+                    <div class="h-3 bg-slate-100 rounded-sm w-full mb-2"></div>
+                    <div class="h-3 bg-slate-100 rounded-sm w-5/6 mb-6"></div>
+                    <div class="mt-auto pt-5 border-t border-slate-50 flex justify-between">
+                        <div class="h-3 bg-rose-100 rounded-full w-1/2"></div>
+                        <div class="w-4 h-4 bg-slate-100 rounded-full"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('search-input').value.toLowerCase();
+            render();
+        }
+
+        function render() {
+            const grid = document.getElementById('content-grid');
+            if (isLoading || !trendsCache[activeCat]) return;
+            
+            grid.innerHTML = '';
+            const currentData = trendsCache[activeCat] || [];
+
+            const filtered = currentData.filter(d => {
+                const matchSearch = d.t.toLowerCase().includes(searchQuery) || d.s.toLowerCase().includes(searchQuery);
+                return matchSearch;
+            });
+
+            if(filtered.length === 0) {
+                 grid.innerHTML = `<div class="col-span-full text-center text-slate-400 py-10 font-medium">当前分类下暂无包含 "${searchQuery}" 的热点，请尝试其他关键词</div>`;
+                 return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-[32px] p-7 border border-slate-100 shadow-sm hover:shadow-2xl hover:translate-y-[-6px] transition-all cursor-pointer flex flex-col group";
+                card.onclick = () => openLab(item);
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-5">
+                        <span class="px-3 py-1 bg-rose-50 text-[10px] text-rose-500 font-black rounded-full uppercase tracking-tighter">${item.cat}</span>
+                        <div class="text-[10px] font-bold text-amber-500 bg-amber-50 px-2 py-1 rounded-lg">潜力值: ${Math.floor(item.sc[3])}</div>
+                    </div>
+                    <h3 class="text-base font-black mb-3 line-clamp-2 leading-tight group-hover:text-rose-600 transition-colors">${item.t}</h3>
+                    <p class="text-slate-400 text-xs mb-6 line-clamp-2 leading-relaxed">${item.s}</p>
+                    <div class="mt-auto pt-5 border-t border-slate-50 flex items-center justify-between">
+                        <span class="text-[11px] font-black text-rose-500">生成沉浸式网页指令 →</span>
+                        <div class="flex space-x-1">
+                            <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-bounce"></div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-rose-300"></div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openLab(item) {
+            switchTab('lab');
+            const lab = document.getElementById('lab-content');
+            const fullLLMPrompt = generateFullLLMPrompt(item);
+            const fullMJPrompt = generateFullMJPrompt(item);
+
+            lab.innerHTML = `
+                <!-- 左侧：视觉与分析 -->
+                <div class="lg:col-span-4 space-y-8">
+                    <div class="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">● 爆款潜力分析</h4>
+                        <div class="chart-container mb-6">
+                            <canvas id="detailChart"></canvas>
+                        </div>
+                        <div class="p-5 bg-rose-50 rounded-2xl border border-rose-100">
+                            <p class="text-[11px] text-rose-800 font-black mb-2 italic">💡 爆款底层逻辑 (Logic)</p>
+                            <p class="text-[13px] text-rose-900 leading-relaxed font-medium">${item.l}</p>
+                        </div>
+                    </div>
+
+                    <!-- 手机预览 -->
+                    <div class="flex flex-col items-center">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">● 小红书成品预览</h4>
+                        <div class="phone-mockup bg-gray-50 flex flex-col relative shadow-[0_0_15px_rgba(0,0,0,0.1)]">
+                            <!-- 顶部占位 -->
+                            <div class="h-12 w-full flex justify-between items-center px-4 pt-4 bg-white/80 backdrop-blur z-10 absolute top-0">
+                                <span class="text-sm cursor-pointer opacity-50">⬅️</span>
+                                <span class="text-xs font-black tracking-widest">发现</span>
+                                <span class="text-sm cursor-pointer opacity-50">🔍</span>
+                            </div>
+                            
+                            <!-- 滚动内容区 -->
+                            <div class="flex-1 overflow-y-auto no-scrollbar pb-16 pt-12">
+                                <!-- 封面图区 -->
+                                <div class="w-full aspect-[3/4] bg-gradient-to-br from-rose-100 via-white to-amber-50 flex flex-col items-center justify-center p-6 text-center border-b border-rose-50 relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
+                                    <span class="text-4xl mb-4 relative z-10 drop-shadow-md">✨</span>
+                                    <span class="text-xl font-black text-slate-800 leading-tight relative z-10 break-words">${item.t}</span>
+                                </div>
+                                
+                                <!-- 文字区 -->
+                                <div class="p-4 bg-white">
+                                    <h3 class="text-[15px] font-black text-slate-800 mb-3 leading-snug">${item.t}</h3>
+                                    <p class="text-[13px] text-slate-600 mb-4 leading-relaxed font-light">${item.s}</p>
+                                    
+                                    <div class="flex flex-wrap gap-2 mb-4">
+                                        <span class="text-[11px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">#${item.cat}</span>
+                                        <span class="text-[11px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">#爆款制造机</span>
+                                        <span class="text-[11px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">#干货分享</span>
+                                    </div>
+
+                                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                        <p class="text-[11px] font-bold text-slate-400 mb-1">💡 创作内核参考 (非正文)</p>
+                                        <p class="text-[11px] text-slate-500 leading-relaxed">${item.l}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 底部互动区 -->
+                            <div class="absolute bottom-0 w-full bg-white border-t border-slate-100 p-3 flex justify-between items-center text-sm z-10">
+                                <div class="bg-slate-100 px-4 py-1.5 rounded-full text-[11px] text-slate-400 flex-1 mr-4">说点什么...</div>
+                                <div class="flex space-x-4 text-slate-600">
+                                    <span class="text-base cursor-pointer hover:scale-110 transition-transform">❤️</span>
+                                    <span class="text-base cursor-pointer hover:scale-110 transition-transform">⭐</span>
+                                    <span class="text-base cursor-pointer hover:scale-110 transition-transform">💬</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：工业级指令 -->
+                <div class="lg:col-span-8 space-y-10">
+                    <div>
+                        <div class="flex items-center justify-between mb-5 px-2">
+                            <h4 class="text-xl font-black italic"># Midjourney 纯视觉画面指令</h4>
+                            <button onclick="copy('mj-text')" class="btn-glow text-xs font-black bg-[#ff2442] text-white px-6 py-3 rounded-2xl hover:scale-105 transition-all">复制视觉提示词</button>
+                        </div>
+                        <div id="mj-text" class="prompt-block p-10 rounded-[40px] text-sm leading-relaxed overflow-x-auto whitespace-pre-wrap ring-1 ring-white/10">${fullMJPrompt}</div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-5 px-2">
+                            <h4 class="text-xl font-black italic"># 生成小红书图文 HTML 页面指令</h4>
+                            <button onclick="copy('copy-text')" class="text-xs font-black bg-slate-900 text-white px-6 py-3 rounded-2xl hover:bg-rose-600 transition-all">复制网页生成指令</button>
+                        </div>
+                        <div id="copy-text" class="prompt-block p-10 rounded-[40px] text-sm leading-relaxed overflow-x-auto whitespace-pre-wrap ring-1 ring-white/10">${fullLLMPrompt}</div>
+                    </div>
+
+                    <div class="bg-amber-50 rounded-[40px] p-10 border border-amber-100">
+                        <h4 class="text-xs font-black text-amber-800 uppercase tracking-widest mb-6">● “先图后网页” Pro 执行建议</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 text-[13px] leading-relaxed text-amber-900 font-medium">
+                            <div>
+                                <strong class="block mb-3 text-lg">【Step 1：炼制灵魂首图】</strong>
+                                先复制下方的 <strong>Midjourney 视觉指令</strong>，去 AI 绘图工具中生成一张极具网感的惊艳首图，并保存下来。这是整个网页的视觉灵魂。
+                            </div>
+                            <div>
+                                <strong class="block mb-3 text-lg">【Step 2：带图生成排版】</strong>
+                                把上方的 <strong>HTML 页面指令</strong>，连同你刚生成的 <strong>图片</strong> 一同发给大模型（如 Gemini 1.5 Pro 或 Claude 3.5）。它们会从图片中提取色调氛围，为你生成一个浑然一体的图文网页！
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => renderChart(item.sc), 100);
+        }
+
+        function generateFullLLMPrompt(item) {
+            return `# 角色设定
+你是一位顶尖的前端开发工程师兼小红书资深视觉设计师。极其擅长将纯文本结合画面，排版成极具“网感”的沉浸式页面。
+
+# 任务目标
+我将先使用 AI 绘图工具生成了一张绝美的首图，并随附发给你（请查收对话中的图片）。
+请基于这幅【首图视觉】以及我提供的【热点选题大纲】，直接编写一个完整的、可独立运行的 HTML 网页正文。
+【极其重要！！！⚠️】你生成的网页正文结构（包括各级标题、段落划分、知识点列举）必须与下面提供的“本次创作选题大纲”保持绝对一致！绝不要自行发散或偏离我给定的大纲骨架！网页的色彩呼应和排版情绪可以参考图片，但“文字内容大纲”必须严格遵照以下设定！
+
+# 本次创作选题大纲
+【${item.cat}赛道】：${item.t}
+（内容内核：${item.s}）
+（爆款逻辑骨架：${item.l}）
+
+# HTML 开发规范与视觉美学要求
+1. **单文件结构与编码**：所有 HTML 结构与样式（强制使用 Tailwind CSS CDN）必须写在同一个文件中。⚠️极其重要：必须在 <head> 中显式添加 <meta charset="UTF-8"> 标签！请直接使用原生的 Emoji 表情（如 🔥、✨ 等），确保所有中文和表情符号在浏览器中完美渲染，绝不能出现乱码或转义错误！
+2. **移动端容器**：在中央绘制一个移动端风格容器（max-w-[400px]，居中，精致的轻拟物阴影）。背景色建议根据主图提取极浅的色调（如 bg-rose-50 / bg-amber-50 等，不要用纯白）。
+3. **视觉与大纲的严密融合**：
+   - 【大纲100%还原】：必须严格按照上方提供的《内容内核》与《爆款逻辑骨架》进行内容填充。把核心逻辑拆解为清晰的 <h2> / <h3> 小标题或卡片区块，不得遗漏、篡改或自行脑补大纲之外的无关段落。
+   - 【纯前端CSS文字首图】：⚠️极其重要：彻底放弃任何占位图 API！绝不允许使用任何 <img> 标签作为首图！请使用一个 <div> 容器（利用 Tailwind 的背景渐变、flex 居中、加粗发光大字体、圆角等样式）在网页最顶端绘制一个高大上的封面排版区块。封面中心渲染的文字必须是：“${item.t}”。
+   - 【色彩美学】：排版用到的强调色（如大标题颜色、高亮背景区块、引语左边框），请必须通过 Tailwind 提取与图片画面相一致的主题色，形成高级的色彩同频。
+   - 【网感文案】：在绝对不偏离原定大纲的前提下，对文案进行润色，加入抓眼球的黄金3秒标题、高呼吸感的段落间距、贴切的 Emoji，以及底部的 #话题标签集合。
+4. **输出限制**：
+   - 无需解释逻辑，只需在最外层用 \`\`\`html 包裹输出完整可运行的网页代码。
+
+现在，请观察我发给你的图片，并严格遵循上述文字大纲，立即开动生成这个专属的图文页面代码吧！`;
+        }
+
+        function generateFullMJPrompt(item) {
+            const specMap = {
+                "美妆护肤": "Macro close-up shot, flawless skin texture with subtle moisture, soft natural light, premium cosmetic packaging, pastel color palette, cinematic focus",
+                "AI科技": "Futuristic clean office, high-tech devices, holographic interface, minimal aesthetic, neon accents, cinematic depth of field, 8k resolution",
+                "副业搞钱": "Cozy workspace at golden hour, a laptop with profit graphs, a cup of specialty coffee, warm atmosphere, professional photography, organized desk"
+            };
+            const spec = specMap[item.cat] || "High-end commercial photography, cinematic lighting, eye-catching composition, 8k resolution, photorealistic";
+            return `Subject: Visual for ${item.t}\n\nPrompt: ${spec}, ${item.s} theme, clean and minimal style, vivid colors, depth of field --v 6.0 --ar 3:4 --stylize 250 --quality 2`;
+        }
+
+        function renderChart(scores) {
+            const ctx = document.getElementById('detailChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['视觉潜力', '情绪共鸣', '实用干货', '互动潜力'],
+                    datasets: [{
+                        data: scores,
+                        backgroundColor: 'rgba(255, 36, 66, 0.2)',
+                        borderColor: '#ff2442',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ff2442',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: { 
+                            min: 0, max: 100, 
+                            ticks: { display: false }, 
+                            grid: { color: 'rgba(0,0,0,0.05)' }, 
+                            angleLines: { color: 'rgba(0,0,0,0.05)' },
+                            pointLabels: { font: { weight: 'bold', size: 12 } } 
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function switchTab(t) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`${t}-view`).classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function copy(id) {
+            const text = document.getElementById(id).innerText;
+            
+            // 使用 document.execCommand 方案以兼容受限的 iframe 沙盒环境
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-99999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast("✅ 已为您成功复制指令！现在可以去粘贴给 AI 了");
+            } catch (err) {
+                console.error('复制失败', err);
+                showToast("❌ 复制失败，请手动框选复制");
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
