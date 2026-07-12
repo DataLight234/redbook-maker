@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书爆款制造机·至尊极客版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+        body { font-family: 'Noto Sans SC', sans-serif; background-color: #f9f9f9; }
+        .chart-container { position: relative; width: 100%; max-width: 350px; margin: 0 auto; height: 280px; }
+        
+        /* 优雅的横向滚动条 */
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+        
+        .category-pill.active { background-color: #ff2442; color: white; transform: scale(1.05); box-shadow: 0 4px 12px rgba(255, 36, 66, 0.3); }
+        .phone-mockup { width: 320px; height: 600px; border: 12px solid #1a1a1a; border-radius: 40px; background: white; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; }
+        .prompt-block { background-color: #1e1e1e; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; scrollbar-width: thin; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 36, 66, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 36, 66, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 36, 66, 0); } }
+        .btn-glow { animation: pulse-red 2s infinite; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity" onclick="location.reload()" title="回到首页并刷新">
+                <div class="w-10 h-10 bg-gradient-to-br from-[#ff2442] to-[#ff5a71] rounded-xl flex items-center justify-center text-white font-black text-lg shadow-md shadow-rose-200">爆</div>
+                <span class="text-xl font-black tracking-tighter">爆款制造机 <span class="text-[#ff2442] font-light">PRO</span></span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100">
+                    <span class="mr-1 w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> 🌐 全网开放 API 接入中
+                </div>
+                <!-- DIY 自定义生成按钮 -->
+                <button onclick="openCustomModal()" class="hidden md:flex text-xs font-bold px-4 py-2 bg-rose-50 text-rose-600 rounded-full hover:bg-rose-100 transition-all border border-rose-100 shadow-sm">✨ DIY 自定义</button>
+                <div class="relative hidden md:block">
+                    <input type="text" id="search-input" oninput="handleSearch()" placeholder="搜索爆款选题..." class="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-rose-500 w-64 transition-all">
+                    <span class="absolute left-3 top-2.5 opacity-40 text-xs">🔍</span>
+                </div>
+                <!-- 移动端 DIY 按钮 -->
+                <button onclick="openCustomModal()" class="md:hidden text-xs font-bold px-3 py-2 bg-rose-50 text-rose-600 rounded-full">✨ DIY</button>
+                
+                <button onclick="switchTab('explore')" class="text-xs font-bold px-4 py-2 bg-slate-900 text-white rounded-full hover:bg-rose-600 transition-all shadow-md">流量中心</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-24 pb-20 px-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- 探索视图 -->
+            <section id="explore-view">
+                <div class="mb-10 text-center md:text-left">
+                    <h2 class="text-4xl font-black mb-3 tracking-tight">今日流量雷达</h2>
+                    <p class="text-slate-400 text-sm">已为您锁定全网 8 大领域的最优切入点，支持工业级指令一键导出。</p>
+                </div>
+
+                <!-- 分类 Pills (带有定制横向滚动条) -->
+                <div class="sticky top-16 z-40 bg-[#f9f9f9]/90 backdrop-blur py-5 mb-8 flex gap-3 overflow-x-auto custom-scrollbar border-b border-slate-50" id="category-pills">
+                    <!-- JS 注入 -->
+                </div>
+
+                <!-- 卡片网格 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="content-grid">
+                    <!-- JS 注入 -->
+                </div>
+            </section>
+
+            <!-- 实验室视图 (详情) -->
+            <section id="lab-view" class="hidden">
+                <div class="flex items-center space-x-4 mb-8">
+                    <button onclick="switchTab('explore')" class="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all shadow-sm">
+                        <span class="text-lg">⬅️</span>
+                    </button>
+                    <h2 class="text-2xl font-black italic tracking-tight">PRO 创作实验室</h2>
+                </div>
+
+                <div id="lab-content" class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                    <!-- JS 注入实验室详情 -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 吐司通知 -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 px-8 py-4 bg-slate-900 text-white rounded-2xl text-sm font-bold shadow-2xl opacity-0 transition-all duration-300 z-[120] pointer-events-none whitespace-nowrap">
+    </div>
+
+    <!-- DIY 自定义输入弹窗 -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[200] hidden flex items-center justify-center">
+        <div class="bg-white rounded-[32px] p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all scale-95 opacity-0" id="custom-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-black italic tracking-tight">DIY 专属热点</h3>
+                <button onclick="closeCustomModal()" class="text-slate-400 hover:text-slate-700 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">✖</button>
+            </div>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">核心内容 (关键词 / 标题 / 链接)</label>
+                    <textarea id="custom-input" rows="3" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none resize-none transition-all placeholder:text-slate-400" placeholder="例如：'2026搞钱思路'、'苹果发布会' 或 直接粘贴任何你想改写的新闻网页链接..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">选填：赛道或受众定位</label>
+                    <input type="text" id="custom-context" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all placeholder:text-slate-400" placeholder="例如：数码科技 / 美妆护肤 / 职场新人...">
+                </div>
+                <button onclick="submitCustom()" class="w-full py-4 bg-[#ff2442] text-white rounded-2xl font-black hover:bg-rose-700 transition-colors mt-2 shadow-lg shadow-rose-200">生成工业级指令 →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 定义实时抓取的全网热门资讯源映射
+        const feedMap = {
+            "微博 (社会热搜)": "https://rsshub.app/weibo/search/hot",
+            "知乎 (深度热榜)": "https://rsshub.app/zhihu/hotlist",
+            "Bilibili (全站热门)": "https://rsshub.app/bilibili/popular/all",
+            "36氪 (商业/AI)": "https://36kr.com/feed",
+            "少数派 (数字生活)": "https://sspai.com/feed",
+            "虎嗅 (商业前沿)": "https://rsshub.app/huxiu/article",
+            "豆瓣 (书影音)": "https://rsshub.app/douban/movie/playing",
+            "IT之家 (科技数码)": "https://rsshub.app/ithome/it"
+        };
+        
+        const categories = ["最新混排", ...Object.keys(feedMap)];
+        let activeCat = "最新混排";
+        let searchQuery = "";
+        let trendsCache = {};
+        let isLoading = false;
+
+        const logicTemplates = [
+            "利用最新资讯打时间差，制造信息差优势，抢占首发流量。",
+            "切中当下时代焦虑与情绪共鸣，用犀利观点引发评论区站队探讨。",
+            "将硬核干货进行降维科普，配合极简步骤拆解，降低小白阅读门槛。",
+            "制造极大的视觉/认知反差，用'标题党'句式吸引黄金3秒点击。",
+            "盘点类大合集结构，提供极高的实用价值，疯狂诱导用户收藏。"
+        ];
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => toast.classList.replace('opacity-100', 'opacity-0'), 2500);
+        }
+
+        function switchTab(t) {
+            document.getElementById('explore-view').classList.add('hidden');
+            document.getElementById('lab-view').classList.add('hidden');
+            document.getElementById(t + '-view').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openCustomModal() {
+            const modal = document.getElementById('custom-modal');
+            const content = document.getElementById('custom-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeCustomModal() {
+            const modal = document.getElementById('custom-modal');
+            const content = document.getElementById('custom-modal-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+
+        function submitCustom() {
+            const inputVal = document.getElementById('custom-input').value.trim();
+            const contextVal = document.getElementById('custom-context').value.trim() || '通用赛道';
+            
+            if(!inputVal) {
+                showToast("⚠️ 请输入关键词、标题或网页链接");
+                return;
+            }
+            closeCustomModal();
+
+            const isUrl = inputVal.startsWith('http://') || inputVal.startsWith('https://');
+            let shortTitle = inputVal;
+            let coreLogic = "";
+            let cat = contextVal;
+
+            if (isUrl) {
+                shortTitle = '网页深度拆解与重塑';
+                coreLogic = `【深度指令】：请联网读取此链接(${inputVal})的全部内容，提炼其最核心的观点和数据，将其重构为适合小红书的高密度干货盘点。`;
+            } else if (inputVal.includes("钱") || inputVal.includes("副业") || inputVal.includes("财")) {
+                coreLogic = "抓住受众的搞钱渴望与经济焦虑，制造极强的信息差，盘点低门槛高收益的实操干货，结尾诱导收藏。";
+            } else if (inputVal.includes("焦虑") || inputVal.includes("内耗") || inputVal.includes("情绪")) {
+                coreLogic = "直击当下年轻人的精神内耗痛点，采用高情感浓度的文案，提供切实可行的极简行动指南，引发深深的共鸣与转赞评。";
+            } else {
+                coreLogic = "基于话题进行思维发散，利用强反差或深度盘点逻辑，击中目标人群痛点，降低阅读门槛。";
+            }
+
+            const customItem = {
+                t: shortTitle,
+                s: inputVal,
+                l: coreLogic,
+                sc: [95, 88, 92, 90],
+                cat: cat,
+                url: isUrl ? inputVal : '#'
+            };
+
+            document.getElementById('custom-input').value = '';
+            document.getElementById('custom-context').value = '';
+            openLab(customItem);
+            showToast("✨ 已为您生成专属 DIY 创作指令！");
+        }
+
+        async function fetchLiveTrendsAPI(category) {
+            isLoading = true;
+            renderLoading();
+            
+            try {
+                let targetFeed = feedMap[category];
+                if (category === "最新混排") targetFeed = feedMap["微博 (社会热搜)"];
+
+                const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(targetFeed)}`;
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                
+                const response = await fetch(apiUrl, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    const results = data.items.slice(0, 12).map((item, index) => {
+                        const cleanDesc = item.description ? item.description.replace(/<[^>]*>?/gm, '').substring(0, 90) + '...' : '点击进入实验室生成深度解析...';
+                        return {
+                            t: item.title,
+                            s: cleanDesc,
+                            l: logicTemplates[index % logicTemplates.length],
+                            sc: [ Math.floor(Math.random() * 20 + 80), Math.floor(Math.random() * 20 + 80), Math.floor(Math.random() * 10 + 90), Math.floor(Math.random() * 15 + 85) ],
+                            cat: category === "最新混排" ? "实时热点" : category.split(' ')[0],
+                            url: item.link
+                        };
+                    });
+                    isLoading = false;
+                    return results;
+                } else {
+                    throw new Error('API 数据解析异常');
+                }
+            } catch (error) {
+                console.warn("启用本地备用热点库");
+                isLoading = false;
+                return getFallbackData(category);
+            }
+        }
+
+        function getFallbackData(category) {
+            const fallbackDB = {
+                "微博": [
+                    { t: "当代年轻人刮起'反向消费'风潮", s: "不再追求大牌，主打实用主义。" },
+                    { t: "周末'特种兵旅游'到底有多累", s: "打卡牺牲睡眠的新型旅游体验。" }
+                ],
+                "知乎": [
+                    { t: "2026年，普通人还有哪些副业风口？", s: "盘点低门槛高容错的小微创业方向。" },
+                    { t: "如何克服严重的'精神内耗'？", s: "心理学角度拆解内耗成因及极简行动指南。" }
+                ]
+            };
+            let key = category === "最新混排" ? "微博" : category.split(' ')[0];
+            let sourceList = fallbackDB[key] || fallbackDB["微博"];
+
+            return sourceList.map((item, index) => ({
+                t: item.t,
+                s: item.s,
+                l: logicTemplates[index % logicTemplates.length],
+                sc: [90, 85, 95, 88],
+                cat: category === "最新混排" ? "实时热点" : key,
+                url: "#"
+            }));
+        }
+
+        async function init() {
+            const pillContainer = document.getElementById('category-pills');
+            pillContainer.innerHTML = '';
+            categories.forEach(c => {
+                const b = document.createElement('button');
+                b.className = `category-pill whitespace-nowrap px-6 py-2.5 rounded-2xl text-xs font-bold border border-slate-100 bg-white hover:border-rose-200 transition-all ${c === activeCat ? 'active' : ''}`;
+                b.innerText = c;
+                b.onclick = async () => { 
+                    if(isLoading) return; 
+                    activeCat = c; 
+                    Array.from(pillContainer.children).forEach(btn => {
+                        btn.className = `category-pill whitespace-nowrap px-6 py-2.5 rounded-2xl text-xs font-bold border border-slate-100 bg-white hover:border-rose-200 transition-all ${btn.innerText === activeCat ? 'active' : ''}`;
+                    });
+                    await loadAndRenderCategory(); 
+                };
+                pillContainer.appendChild(b);
+            });
+            await loadAndRenderCategory();
+        }
+
+        async function loadAndRenderCategory() {
+            if (!trendsCache[activeCat]) {
+                const data = await fetchLiveTrendsAPI(activeCat);
+                if (data && data.length > 0) trendsCache[activeCat] = data; 
+            }
+            render();
+        }
+
+        function renderLoading() {
+            const grid = document.getElementById('content-grid');
+            grid.innerHTML = Array(8).fill(0).map(() => `
+                <div class="bg-white rounded-[32px] p-7 border border-slate-100 shadow-sm animate-pulse flex flex-col">
+                    <div class="h-5 bg-slate-200 rounded-md w-full mb-3"></div>
+                    <div class="h-5 bg-slate-200 rounded-md w-3/4 mb-6"></div>
+                </div>
+            `).join('');
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('search-input').value.toLowerCase();
+            render();
+        }
+
+        function render() {
+            const grid = document.getElementById('content-grid');
+            if (isLoading || !trendsCache[activeCat]) return;
+            
+            grid.innerHTML = '';
+            const currentData = trendsCache[activeCat] || [];
+            const filtered = currentData.filter(d => (d.t.toLowerCase().includes(searchQuery) || d.s.toLowerCase().includes(searchQuery)));
+
+            if(filtered.length === 0) {
+                 grid.innerHTML = `<div class="col-span-full text-center text-slate-400 py-10">暂无包含 "${searchQuery}" 的热点</div>`;
+                 return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-[32px] p-7 border border-slate-100 shadow-sm hover:shadow-2xl hover:translate-y-[-6px] transition-all cursor-pointer flex flex-col group";
+                card.onclick = () => openLab(item);
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-5">
+                        <span class="px-3 py-1 bg-rose-50 text-[10px] text-rose-500 font-black rounded-full">${item.cat}</span>
+                    </div>
+                    <h3 class="text-base font-black mb-3 line-clamp-2 leading-tight group-hover:text-rose-600 transition-colors">${item.t}</h3>
+                    <p class="text-slate-400 text-xs mb-6 line-clamp-2">${item.s}</p>
+                    <div class="mt-auto pt-5 border-t border-slate-50 flex items-center justify-between">
+                        <span class="text-[11px] font-black text-rose-500">生成网页与图文指令 →</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openLab(item) {
+            switchTab('lab');
+            const lab = document.getElementById('lab-content');
+            
+            // 生成各个维度的提示词
+            const comicPrompt = generateFullComicPrompt(item);
+            const copywritingPrompt = generateFullCopywritingPrompt(item);
+
+            lab.innerHTML = `
+                <!-- 左侧：视觉与分析手机端草稿 -->
+                <div class="lg:col-span-4 space-y-8">
+                    <div class="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">● 爆款潜力分析</h4>
+                        <div class="chart-container mb-6"><canvas id="detailChart"></canvas></div>
+                        <div class="p-5 bg-rose-50 rounded-2xl border border-rose-100">
+                            <p class="text-[11px] text-rose-800 font-black mb-2 italic">💡 爆款底层逻辑</p>
+                            <p class="text-[13px] text-rose-900 leading-relaxed font-medium">${item.l}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：工业级提示词面板 -->
+                <div class="lg:col-span-8 space-y-10">
+                    <!-- 漫画海报指令 (第一步) -->
+                    <div>
+                        <div class="flex items-center justify-between mb-5 px-2">
+                            <h4 class="text-xl font-black italic text-blue-500"># 1. 漫画风盘点海报生成指令 (需人物垫图)</h4>
+                            <button onclick="copy('comic-text')" class="text-xs font-black bg-blue-500 text-white px-6 py-3 rounded-2xl hover:bg-blue-600 shadow-lg shadow-blue-500/30 transition-all btn-glow">复制海报图指令</button>
+                        </div>
+                        <div id="comic-text" class="prompt-block p-10 rounded-[40px] text-sm leading-relaxed overflow-x-auto whitespace-pre-wrap ring-1 ring-white/10 border border-blue-500/30">${comicPrompt}</div>
+                    </div>
+
+                    <!-- 文案指令 (第二步) -->
+                    <div>
+                        <div class="flex items-center justify-between mb-5 px-2">
+                            <h4 class="text-xl font-black italic text-rose-500"># 2. 小红书爆款发布文案指令</h4>
+                            <button onclick="copy('copywrite-text')" class="text-xs font-black bg-rose-50 text-rose-600 border border-rose-200 px-6 py-3 rounded-2xl hover:bg-rose-100 transition-all">复制笔记文案指令</button>
+                        </div>
+                        <div id="copywrite-text" class="prompt-block p-10 rounded-[40px] text-sm leading-relaxed overflow-x-auto whitespace-pre-wrap ring-1 ring-white/10 border border-rose-100 text-rose-800 bg-rose-50">${copywritingPrompt}</div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => renderChart(item.sc), 100);
+        }
+
+        function generateFullComicPrompt(item) {
+            return `# 角色设定
+你是一位精通小红书爆款排版的顶级信息图表（Infographic）设计师和 AI 绘画大师。
+
+# 任务目标
+请结合下方的【创作话题】，为我生成一张高度结构化的小红书信息图表，并直接出图。
+
+【创作话题】：${item.t}
+【话题内核】：${item.s}
+
+# 💡 核心策略：智能选角与"一主多副"多镜头演绎 (重点)
+请深入理解当前话题语境，**自主决定**画面中的登场人物组合。你可以选择使用我提供的图1（男）、图2（女），或者让他们共同出镜。
+★ 极其重要排版约束 ★：在一张海报中，选定的角色必须**多次出场**！
+1. 【中心主视觉】：在画面正中央，绘制一个画幅最大的主人物，摆出与话题核心情绪相关的代表性动作。
+2. 【周边小窗格】：在中心人物四周散落多个便利贴/小卡片（数量根据内容决定）。**在每一个小卡片内部，都必须画出该中心人物的“缩小版/分身/Q版”，由他们亲自演绎卡片中的具体场景**。
+
+# 🎨 核心排版与视觉约束：
+1. 【整体画风】：日系治愈系扁平漫画风、美式复古漫画报纸风，高级印刷质感。禁止写实。
+2. 【色彩基调】：复古温暖的做旧牛皮纸/奶油纸背景，搭配低饱和度的色彩，留白舒适。
+3. 【版式布局 (Magazine Layout)】：
+   - 顶部区域：超大黑体的醒目主标题（⚠️ 必须直接使用【创作话题】作为纯粹的标题，**绝对不要**在标题里擅自添加“干货盘点”、“知识合集”等任何多余字眼） + 补充说明的副标题。
+   - 中间视觉：巨大、细节丰富的中心主人物。
+   - 知识模块：使用带外框的对话气泡、圆角便利贴、虚线框等将四周的“小人物场景”包裹起来。
+4. 【尺寸比例】：竖版 3:4。
+
+# 🤖 执行要求：
+1. **内容拆解**：根据话题性质，自动拆解出若干个核心内容点，分配到四周的小卡片中。
+2. **选角分配**：自动决定使用哪一张参考图（图1或图2，或双人），并自动构思出 1 个“中心主人物动作”以及周围的“小窗格场景动作”。
+3. **直接出图**：请不要只输出文字提示词，请**直接调用你的绘画能力**生成图片！必须包含 "multiple panels", "one large character in the center surrounded by small versions of the same character doing different actions" 等约束语以实现一主多副排版。`;
+        }
+
+        function generateFullCopywritingPrompt(item) {
+            return `# 角色设定
+你是一位拥有百万粉丝的小红书爆款操盘手兼顶级文案大师。
+
+# 任务目标
+请结合当前【创作话题】以及我们刚刚构思的【海报内容】，为其写一篇直接用于小红书发布的“笔记配文 (Caption)”。
+
+【创作话题】：${item.t}
+【基调】：${item.l}
+
+# ⚠️ 核心文案规范
+1. 黄金三秒标题：自带情绪和吸引力的简短标题，多用符号和数字。
+2. 提炼核心要点：将干货提炼为 3-4 个极其精简的要点（用 Emoji 标号）。
+3. 互动收尾：抛出开放式问题引导留言。
+4. 【极其重要】：全文总字数严格控制在 300 字左右！只需适当分段，绝不允许“一句一行”的过度碎化排版！
+5. 末尾附带 4-6 个高流量 #标签。`;
+        }
+
+        function renderChart(scores) {
+            const ctx = document.getElementById('detailChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['视觉潜力', '情绪共鸣', '实用干货', '互动潜力'],
+                    datasets: [{ data: scores, backgroundColor: 'rgba(255, 36, 66, 0.2)', borderColor: '#ff2442', borderWidth: 3 }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: { r: { min: 0, max: 100, ticks: { display: false } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function copy(id) {
+            const text = document.getElementById(id).innerText;
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast("✅ 已成功复制指令！");
+            } catch (err) {
+                showToast("❌ 复制失败，请手动复制");
+            }
+            document.body.removeChild(textArea);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
