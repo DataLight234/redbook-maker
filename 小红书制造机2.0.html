@@ -540,11 +540,37 @@
 4. 【画面尺寸】：竖版比例 --ar 3:4。
 
 # 🤖 执行要求
-请直接启动你的绘图功能，生成并输出最终具有完美文字排版结构的海报图！绝对不要只输出文本提示词！`;
-            }
+请直接启动你的绘图功能，生成并输出最终的海报图！绝对不要只输出文本提示词！`;
+        }
 
-            // 针对 Midjourney 纯视觉画面指令
-            if (style === 'style-pyramid') {
+        // 针对 扁平双栏对比信息图
+        if (style === 'style-contrast') {
+            const numberingRequirement = hasSubtitle 
+                ? "【序号要求】：各个分点和卡片绝对不需要添加任何数字序号，追求更呼吸感的排版。"
+                : "【序号要求】：各个分点必须强制添加醒目的数字序号（如 01, 02, 03 等），以极大地增强画面的条理性和秩序感。";
+
+            return `# 角色设定
+你是一位精通小红书爆款信息图（Infographic）的顶级视觉设计师与 AI 艺术大师。
+
+# 任务目标
+请结合下方的【创作话题】与【海报标题】，为我绘制并直接输出一张左右双栏对比结构的干货科普信息图表。
+
+【创作话题】：${topicDirection} (基于此方向进行精细内容拆解)
+【海报最上方主标题】：${imageTopTitle} (⚠️ 必须直接使用该内容作为纯粹的主标题，绝对不要擅自在标题前后添加任何类似“干货盘点”、“合集”等无用字眼)
+
+# 💡 核心视觉：扁平双栏对比
+1. 【整体排版】：采用严格的“左右对照”垂直对称结构，中间用一条虚线或带有数字的轴线进行视觉引导与分割。
+2. 【色彩基调】：左侧区域使用极浅的粉红色背景（代表负面/避坑/旧观念），右侧区域使用极浅的蓝色背景（代表正面/解法/新观念），形成柔和但高对比度的红蓝视觉对抗。
+3. 【信息模块】：在左右两栏中整齐排列带圆角的空白或文字文本框。
+4. ${numberingRequirement}
+5. 【点缀元素】：在对应的文本框旁边，绘制生动极简的扁平化日常小图标（Icon，例如购物车、日历、书本等）来辅助释义。
+
+# 🤖 执行要求
+请直接启动你的绘图功能，生成并输出最终的海报图！绝对不要只输出文本提示词！`;
+        }
+
+        // 针对 Midjourney 纯视觉画面指令
+        if (style === 'style-pyramid') {
                 const specMap = {
                     "美妆护肤": "Macro close-up shot, flawless skin texture with subtle moisture, soft natural light, premium cosmetic packaging, pastel color palette, cinematic focus",
                     "AI科技": "Futuristic clean office, high-tech devices, holographic interface, minimal aesthetic, neon accents, cinematic depth of field, 8k resolution",
