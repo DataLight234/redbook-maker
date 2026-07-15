@@ -8,19 +8,22 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
-        body { font-family: 'Noto Sans SC', sans-serif; background-color: #f9f9f9; }
-        .chart-container { position: relative; width: 100%; max-width: 350px; margin: 0 auto; height: 280px; }
+        body { font-family: 'Noto Sans SC', sans-serif; background-color: #f8fafc; }
+        .chart-container { position: relative; width: 100%; max-width: 320px; margin: 0 auto; height: 260px; }
         
-        /* 优雅的横向滚动条 */
+        /* 优雅的自定义横向滚动条 */
         .custom-scrollbar::-webkit-scrollbar { height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
         .category-pill.active { background-color: #ff2442; color: white; transform: scale(1.05); box-shadow: 0 4px 12px rgba(255, 36, 66, 0.3); }
-        .phone-mockup { width: 320px; height: 600px; border: 12px solid #1a1a1a; border-radius: 40px; background: white; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; }
-        .prompt-block { background-color: #1e1e1e; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; scrollbar-width: thin; }
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); }
+        .prompt-block { background-color: #121214; color: #e2e8f0; font-family: 'Courier New', Courier, monospace; scrollbar-width: thin; }
+        
+        /* 拟物风格选择卡 */
+        .style-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 2px solid transparent; }
+        .style-card.active { border-color: #ff2442; background-color: #fff1f2; transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(255, 36, 66, 0.2); }
+        
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 36, 66, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 36, 66, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 36, 66, 0); } }
         .btn-glow { animation: pulse-red 2s infinite; }
     </style>
@@ -35,17 +38,14 @@
             </div>
             <div class="flex items-center space-x-4">
                 <div class="hidden md:flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100">
-                    <span class="mr-1 w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> 🌐 全网开放 API 接入中
+                    <span class="mr-1 w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> 🌐 实时热点智能引擎
                 </div>
-                <!-- DIY 自定义生成按钮 -->
                 <button onclick="openCustomModal()" class="hidden md:flex text-xs font-bold px-4 py-2 bg-rose-50 text-rose-600 rounded-full hover:bg-rose-100 transition-all border border-rose-100 shadow-sm">✨ DIY 自定义</button>
                 <div class="relative hidden md:block">
                     <input type="text" id="search-input" oninput="handleSearch()" placeholder="搜索爆款选题..." class="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-rose-500 w-64 transition-all">
                     <span class="absolute left-3 top-2.5 opacity-40 text-xs">🔍</span>
                 </div>
-                <!-- 移动端 DIY 按钮 -->
                 <button onclick="openCustomModal()" class="md:hidden text-xs font-bold px-3 py-2 bg-rose-50 text-rose-600 rounded-full">✨ DIY</button>
-                
                 <button onclick="switchTab('explore')" class="text-xs font-bold px-4 py-2 bg-slate-900 text-white rounded-full hover:bg-rose-600 transition-all shadow-md">流量中心</button>
             </div>
         </div>
@@ -53,15 +53,21 @@
 
     <main class="pt-24 pb-20 px-6">
         <div class="max-w-7xl mx-auto">
-            <!-- 探索视图 -->
+            <!-- 探索视图 (今日流量雷达) -->
             <section id="explore-view">
-                <div class="mb-10 text-center md:text-left">
-                    <h2 class="text-4xl font-black mb-3 tracking-tight">今日流量雷达</h2>
-                    <p class="text-slate-400 text-sm">已为您锁定全网 8 大领域的最优切入点，支持工业级指令一键导出。</p>
+                <div class="mb-10 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-4xl font-black mb-3 tracking-tight">今日流量雷达</h2>
+                        <p class="text-slate-400 text-sm">已锁定全网各平台热榜的优质切入点，支持工业级提示词一键导出画图与文案。</p>
+                    </div>
+                    <div class="relative md:hidden w-full">
+                        <input type="text" id="search-input-mobile" oninput="handleSearchMobile()" placeholder="搜索爆款选题..." class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-full text-sm focus:ring-2 focus:ring-rose-500">
+                        <span class="absolute left-3 top-3.5 opacity-40 text-sm">🔍</span>
+                    </div>
                 </div>
 
-                <!-- 分类 Pills (带有定制横向滚动条) -->
-                <div class="sticky top-16 z-40 bg-[#f9f9f9]/90 backdrop-blur py-5 mb-8 flex gap-3 overflow-x-auto custom-scrollbar border-b border-slate-50" id="category-pills">
+                <!-- 分类 Pills -->
+                <div class="sticky top-16 z-40 bg-[#f8fafc]/90 backdrop-blur py-5 mb-8 flex gap-3 overflow-x-auto custom-scrollbar border-b border-slate-100" id="category-pills">
                     <!-- JS 注入 -->
                 </div>
 
@@ -71,7 +77,7 @@
                 </div>
             </section>
 
-            <!-- 实验室视图 (详情) -->
+            <!-- 实验室视图 (提示词生成中心) -->
             <section id="lab-view" class="hidden">
                 <div class="flex items-center space-x-4 mb-8">
                     <button onclick="switchTab('explore')" class="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all shadow-sm">
@@ -87,11 +93,10 @@
         </div>
     </main>
 
-    <!-- 吐司通知 -->
+    <!-- 吐司提示 -->
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 px-8 py-4 bg-slate-900 text-white rounded-2xl text-sm font-bold shadow-2xl opacity-0 transition-all duration-300 z-[120] pointer-events-none whitespace-nowrap">
     </div>
 
-    <!-- DIY 自定义输入弹窗 -->
     <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[200] hidden flex items-center justify-center">
         <div class="bg-white rounded-[32px] p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all scale-95 opacity-0" id="custom-modal-content">
             <div class="flex justify-between items-center mb-6">
@@ -100,12 +105,12 @@
             </div>
             <div class="space-y-5">
                 <div>
-                    <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">核心内容 (关键词 / 标题 / 链接)</label>
-                    <textarea id="custom-input" rows="3" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none resize-none transition-all placeholder:text-slate-400" placeholder="例如：'2026搞钱思路'、'苹果发布会' 或 直接粘贴任何你想改写的新闻网页链接..."></textarea>
+                    <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">① 大标题 (核心创作主题)</label>
+                    <input type="text" id="custom-title" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all placeholder:text-slate-400" placeholder="例如：2026普通人存钱指南">
                 </div>
                 <div>
-                    <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">选填：赛道或受众定位</label>
-                    <input type="text" id="custom-context" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all placeholder:text-slate-400" placeholder="例如：数码科技 / 美妆护肤 / 职场新人...">
+                    <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">② 小标题 (用于海报上方的精细标题 / 选填)</label>
+                    <input type="text" id="custom-subtitle" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all placeholder:text-slate-400" placeholder="例如：这几个存钱习惯，在悄悄丰盈你的钱包 (留空则默认大标题)">
                 </div>
                 <button onclick="submitCustom()" class="w-full py-4 bg-[#ff2442] text-white rounded-2xl font-black hover:bg-rose-700 transition-colors mt-2 shadow-lg shadow-rose-200">生成工业级指令 →</button>
             </div>
@@ -119,10 +124,7 @@
             "知乎 (深度热榜)": "https://rsshub.app/zhihu/hotlist",
             "Bilibili (全站热门)": "https://rsshub.app/bilibili/popular/all",
             "36氪 (商业/AI)": "https://36kr.com/feed",
-            "少数派 (数字生活)": "https://sspai.com/feed",
-            "虎嗅 (商业前沿)": "https://rsshub.app/huxiu/article",
-            "豆瓣 (书影音)": "https://rsshub.app/douban/movie/playing",
-            "IT之家 (科技数码)": "https://rsshub.app/ithome/it"
+            "少数派 (数字生活)": "https://sspai.com/feed"
         };
         
         const categories = ["最新混排", ...Object.keys(feedMap)];
@@ -130,6 +132,9 @@
         let searchQuery = "";
         let trendsCache = {};
         let isLoading = false;
+        
+        // 默认选中的海报排版风格
+        let selectedStyle = 'style-manga'; // 默认：日系治愈一主多副
 
         const logicTemplates = [
             "利用最新资讯打时间差，制造信息差优势，抢占首发流量。",
@@ -149,17 +154,34 @@
         function switchTab(t) {
             document.getElementById('explore-view').classList.add('hidden');
             document.getElementById('lab-view').classList.add('hidden');
-            document.getElementById(t + '-view').classList.remove('hidden');
+            if (t === 'explore') {
+                document.getElementById('explore-view').classList.remove('hidden');
+            } else {
+                document.getElementById('lab-view').classList.remove('hidden');
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function openCustomModal() {
+        function openCustomModal(prefillTitle = '') {
             const modal = document.getElementById('custom-modal');
             const content = document.getElementById('custom-modal-content');
+            
+            if (prefillTitle) {
+                document.getElementById('custom-title').value = prefillTitle;
+            } else {
+                document.getElementById('custom-title').value = '';
+            }
+            document.getElementById('custom-subtitle').value = '';
+            
             modal.classList.remove('hidden');
             setTimeout(() => {
                 content.classList.remove('scale-95', 'opacity-0');
                 content.classList.add('scale-100', 'opacity-100');
+                if (prefillTitle) {
+                    document.getElementById('custom-subtitle').focus();
+                } else {
+                    document.getElementById('custom-title').focus();
+                }
             }, 10);
         }
 
@@ -172,42 +194,36 @@
         }
 
         function submitCustom() {
-            const inputVal = document.getElementById('custom-input').value.trim();
-            const contextVal = document.getElementById('custom-context').value.trim() || '通用赛道';
+            const titleVal = document.getElementById('custom-title').value.trim();
+            const subtitleVal = document.getElementById('custom-subtitle').value.trim();
             
-            if(!inputVal) {
-                showToast("⚠️ 请输入关键词、标题或网页链接");
+            if(!titleVal) {
+                showToast("⚠️ 请输入大标题 (核心创作主题)");
                 return;
             }
             closeCustomModal();
 
-            const isUrl = inputVal.startsWith('http://') || inputVal.startsWith('https://');
-            let shortTitle = inputVal;
-            let coreLogic = "";
-            let cat = contextVal;
+            const imageTopTitle = subtitleVal ? subtitleVal : titleVal;
+            let coreLogic = "基于话题大方向进行精细的内容拆解，以多格小场景和一主多副排版提高视觉停留时间，启发探讨。";
 
-            if (isUrl) {
-                shortTitle = '网页深度拆解与重塑';
-                coreLogic = `【深度指令】：请联网读取此链接(${inputVal})的全部内容，提炼其最核心的观点和数据，将其重构为适合小红书的高密度干货盘点。`;
-            } else if (inputVal.includes("钱") || inputVal.includes("副业") || inputVal.includes("财")) {
-                coreLogic = "抓住受众的搞钱渴望与经济焦虑，制造极强的信息差，盘点低门槛高收益的实操干货，结尾诱导收藏。";
-            } else if (inputVal.includes("焦虑") || inputVal.includes("内耗") || inputVal.includes("情绪")) {
-                coreLogic = "直击当下年轻人的精神内耗痛点，采用高情感浓度的文案，提供切实可行的极简行动指南，引发深深的共鸣与转赞评。";
-            } else {
-                coreLogic = "基于话题进行思维发散，利用强反差或深度盘点逻辑，击中目标人群痛点，降低阅读门槛。";
+            if (titleVal.includes("钱") || titleVal.includes("副业") || titleVal.includes("财") || titleVal.includes("存")) {
+                coreLogic = "抓住受众的搞钱渴望与金钱痛点，形成红蓝左右对比。";
+            } else if (titleVal.includes("成长") || titleVal.includes("体系") || titleVal.includes("框架") || titleVal.includes("系统")) {
+                coreLogic = "通过递进的层级关系帮助普通人搭建个人成长框架，右侧搭配科技或职场攀登者的具象3D模型。";
             }
 
             const customItem = {
-                t: shortTitle,
-                s: inputVal,
+                t: titleVal,              
+                subt: imageTopTitle,      
+                hasSubtitle: !!subtitleVal, 
+                s: titleVal,              
                 l: coreLogic,
                 sc: [95, 88, 92, 90],
-                cat: cat,
-                url: isUrl ? inputVal : '#'
+                cat: "DIY 专属"
             };
 
-            document.getElementById('custom-input').value = '';
-            document.getElementById('custom-context').value = '';
+            document.getElementById('custom-title').value = '';
+            document.getElementById('custom-subtitle').value = '';
             openLab(customItem);
             showToast("✨ 已为您生成专属 DIY 创作指令！");
         }
@@ -257,12 +273,15 @@
         function getFallbackData(category) {
             const fallbackDB = {
                 "微博": [
-                    { t: "当代年轻人刮起'反向消费'风潮", s: "不再追求大牌，主打实用主义。" },
-                    { t: "周末'特种兵旅游'到底有多累", s: "打卡牺牲睡眠的新型旅游体验。" }
+                    { t: "当代青年刮起“反向消费”风潮", s: "不再执着大牌名表，主打极致极简实用主义，追求精神丰盈。" },
+                    { t: "周末“特种兵式”解压真的管用吗", s: "在极端劳累与短暂放松之间寻求平衡的新型生活自救法。" }
                 ],
                 "知乎": [
-                    { t: "2026年，普通人还有哪些副业风口？", s: "盘点低门槛高容错的小微创业方向。" },
-                    { t: "如何克服严重的'精神内耗'？", s: "心理学角度拆解内耗成因及极简行动指南。" }
+                    { t: "如何在30岁前构建自己的知识体系？", s: "盘点普通人打破认知边界、建立底层学习框架的几条终身方法论。" },
+                    { t: "为什么存钱才是普通人最大的底气", s: "金钱心理学拆解：如何拒绝伪精致，悄悄丰盈自己的生活本金。" }
+                ],
+                "36氪": [
+                    { t: "2026年，AI新工具对职场人的底层颠覆", s: "拒绝做机械性的螺丝钉，建立高效能的工作自动化闭环。" }
                 ]
             };
             let key = category === "最新混排" ? "微博" : category.split(' ')[0];
@@ -272,7 +291,7 @@
                 t: item.t,
                 s: item.s,
                 l: logicTemplates[index % logicTemplates.length],
-                sc: [90, 85, 95, 88],
+                sc: [92, 86, 94, 89],
                 cat: category === "最新混排" ? "实时热点" : key,
                 url: "#"
             }));
@@ -312,12 +331,17 @@
                 <div class="bg-white rounded-[32px] p-7 border border-slate-100 shadow-sm animate-pulse flex flex-col">
                     <div class="h-5 bg-slate-200 rounded-md w-full mb-3"></div>
                     <div class="h-5 bg-slate-200 rounded-md w-3/4 mb-6"></div>
+                    <div class="mt-auto h-8 bg-slate-100 rounded-md w-1/2"></div>
                 </div>
             `).join('');
         }
 
         function handleSearch() {
             searchQuery = document.getElementById('search-input').value.toLowerCase();
+            render();
+        }
+        function handleSearchMobile() {
+            searchQuery = document.getElementById('search-input-mobile').value.toLowerCase();
             render();
         }
 
@@ -343,9 +367,9 @@
                         <span class="px-3 py-1 bg-rose-50 text-[10px] text-rose-500 font-black rounded-full">${item.cat}</span>
                     </div>
                     <h3 class="text-base font-black mb-3 line-clamp-2 leading-tight group-hover:text-rose-600 transition-colors">${item.t}</h3>
-                    <p class="text-slate-400 text-xs mb-6 line-clamp-2">${item.s}</p>
+                    <p class="text-slate-400 text-xs mb-6 line-clamp-2 leading-relaxed">${item.s}</p>
                     <div class="mt-auto pt-5 border-t border-slate-50 flex items-center justify-between">
-                        <span class="text-[11px] font-black text-rose-500">生成网页与图文指令 →</span>
+                        <span class="text-[11px] font-black text-rose-500">一键生成爆款图文指令 →</span>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -353,97 +377,221 @@
         }
 
         function openLab(item) {
+            window.currentActiveLabItem = item; 
             switchTab('lab');
             const lab = document.getElementById('lab-content');
             
-            // 生成各个维度的提示词
-            const comicPrompt = generateFullComicPrompt(item);
-            const copywritingPrompt = generateFullCopywritingPrompt(item);
+            // 每次打开新的选题，默认复位到 治愈系扁平漫画风
+            selectedStyle = 'style-manga';
+
+            renderLabLayout(item);
+        }
+
+        function renderLabLayout(item) {
+            const lab = document.getElementById('lab-content');
+            const comicPrompt = generateFullComicPrompt(item, selectedStyle);
+            const copywritingPrompt = generateFullCopywritingPrompt(item, selectedStyle);
 
             lab.innerHTML = `
-                <!-- 左侧：视觉与分析手机端草稿 -->
+                <!-- 左侧：参数、爆款分析、核心风格编辑器 -->
                 <div class="lg:col-span-4 space-y-8">
-                    <div class="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm">
-                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">● 爆款潜力分析</h4>
-                        <div class="chart-container mb-6"><canvas id="detailChart"></canvas></div>
-                        <div class="p-5 bg-rose-50 rounded-2xl border border-rose-100">
-                            <p class="text-[11px] text-rose-800 font-black mb-2 italic">💡 爆款底层逻辑</p>
-                            <p class="text-[13px] text-rose-900 leading-relaxed font-medium">${item.l}</p>
+                    <!-- 风格编辑器 -->
+                    <div class="bg-white rounded-[32px] p-6 border border-slate-100 shadow-sm">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">🎨 海报排版风格切换</h4>
+                        <div class="space-y-3">
+                            <div id="style-manga" onclick="changeStyle('style-manga')" class="style-card p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 flex items-center gap-3 active">
+                                <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-500 flex items-center justify-center font-bold text-sm">👦</div>
+                                <div class="text-left">
+                                    <p class="text-xs font-black text-slate-800">治愈系扁平漫画风 (带垫图)</p>
+                                    <p class="text-[10px] text-slate-400">大主图四周环绕Q版小人演绎场景</p>
+                                </div>
+                            </div>
+                            
+                            <div id="style-contrast" onclick="changeStyle('style-contrast')" class="style-card p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-500 flex items-center justify-center font-bold text-sm">⚖️</div>
+                                <div class="text-left">
+                                    <p class="text-xs font-black text-slate-800">扁平双栏对比信息图</p>
+                                    <p class="text-[10px] text-slate-400">红蓝两栏视觉对照，配简约Icon</p>
+                                </div>
+                            </div>
+                            
+                            <div id="style-pyramid" onclick="changeStyle('style-pyramid')" class="style-card p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-500 flex items-center justify-center font-bold text-sm">📸</div>
+                                <div class="text-left">
+                                    <p class="text-xs font-black text-slate-800">Midjourney 纯视觉画面</p>
+                                    <p class="text-[10px] text-slate-400">智能匹配所属赛道的电影级高质感参数</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 维度指数 -->
+                    <div class="bg-white rounded-[32px] p-6 border border-slate-100 shadow-sm">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">📊 爆款潜力多维雷达</h4>
+                        <div class="chart-container mb-4"><canvas id="detailChart"></canvas></div>
+                        <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100">
+                            <p class="text-[10px] text-rose-800 font-black mb-1.5 italic">💡 爆款底层逻辑</p>
+                            <p id="logic-text" class="text-[12px] text-rose-950 leading-relaxed font-bold">${item.l}</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- 右侧：工业级提示词面板 -->
                 <div class="lg:col-span-8 space-y-10">
-                    <!-- 漫画海报指令 (第一步) -->
+                    <!-- 快速拆解 DIY 引导面板 -->
+                    <div class="bg-slate-50/80 p-6 rounded-[28px] border border-slate-200/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="text-left">
+                            <h5 class="font-black text-sm text-slate-800 flex items-center gap-1.5">⚡ 想要精细化修改标题文案？</h5>
+                            <p class="text-xs text-slate-400 mt-1">点击快速拆解可自动将当前话题名称填入“大标题”，您仅需设置更抓人的小标题！</p>
+                        </div>
+                        <button onclick="openCustomModal(window.currentActiveLabItem.t)" class="shrink-0 text-xs font-black bg-rose-500 text-white hover:bg-rose-600 px-5 py-3 rounded-2xl transition-all shadow-md shadow-rose-200">
+                            ⚡ 快速拆解 DIY
+                        </button>
+                    </div>
+
+                    <!-- 风格海报生成指令 (第一步) -->
                     <div>
                         <div class="flex items-center justify-between mb-5 px-2">
-                            <h4 class="text-xl font-black italic text-blue-500"># 1. 漫画风盘点海报生成指令 (需人物垫图)</h4>
-                            <button onclick="copy('comic-text')" class="text-xs font-black bg-blue-500 text-white px-6 py-3 rounded-2xl hover:bg-blue-600 shadow-lg shadow-blue-500/30 transition-all btn-glow">复制海报图指令</button>
+                            <h4 id="step-one-title" class="text-lg font-black italic text-blue-600"># 1. 漫画风盘点海报生成指令 (需人物垫图)</h4>
+                            <button onclick="copy('comic-text')" class="text-xs font-black bg-blue-600 text-white px-5 py-2.5 rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all btn-glow">复制海报图指令</button>
                         </div>
-                        <div id="comic-text" class="prompt-block p-10 rounded-[40px] text-sm leading-relaxed overflow-x-auto whitespace-pre-wrap ring-1 ring-white/10 border border-blue-500/30">${comicPrompt}</div>
+                        <div id="comic-text" class="prompt-block p-8 rounded-[32px] text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap ring-1 ring-white/10 border border-blue-500/20">${comicPrompt}</div>
                     </div>
 
                     <!-- 文案指令 (第二步) -->
                     <div>
                         <div class="flex items-center justify-between mb-5 px-2">
-                            <h4 class="text-xl font-black italic text-rose-500"># 2. 小红书爆款发布文案指令</h4>
-                            <button onclick="copy('copywrite-text')" class="text-xs font-black bg-rose-50 text-rose-600 border border-rose-200 px-6 py-3 rounded-2xl hover:bg-rose-100 transition-all">复制笔记文案指令</button>
+                            <h4 class="text-lg font-black italic text-rose-600"># 2. 小红书爆款发布文案指令</h4>
+                            <button onclick="copy('copywrite-text')" class="text-xs font-black bg-rose-50 text-rose-600 border border-rose-200 px-5 py-2.5 rounded-2xl hover:bg-rose-100 transition-all">复制笔记文案指令</button>
                         </div>
-                        <div id="copywrite-text" class="prompt-block p-10 rounded-[40px] text-sm leading-relaxed overflow-x-auto whitespace-pre-wrap ring-1 ring-white/10 border border-rose-100 text-rose-800 bg-rose-50">${copywritingPrompt}</div>
+                        <div id="copywrite-text" class="prompt-block p-8 rounded-[32px] text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap ring-1 ring-white/10 border border-rose-200 text-rose-800 bg-rose-50">${copywritingPrompt}</div>
                     </div>
                 </div>
             `;
-            setTimeout(() => renderChart(item.sc), 100);
+            setTimeout(() => {
+                renderChart(item.sc);
+                updateActiveStyleUI();
+            }, 100);
         }
 
-        function generateFullComicPrompt(item) {
-            return `# 角色设定
-你是一位精通小红书爆款排版的顶级信息图表（Infographic）设计师和 AI 绘画大师。
+        function changeStyle(styleKey) {
+            selectedStyle = styleKey;
+            updateActiveStyleUI();
+            
+            const item = window.currentActiveLabItem;
+            
+            // 动态更新页面标题提示和卡片代码
+            const stepOneTitle = document.getElementById('step-one-title');
+            if (selectedStyle === 'style-manga') {
+                stepOneTitle.innerText = '# 1. 漫画风盘点海报生成指令 (需人物垫图)';
+            } else if (selectedStyle === 'style-contrast') {
+                stepOneTitle.innerText = '# 1. 扁平双栏对比信息图指令 (极简红蓝版)';
+            } else if (selectedStyle === 'style-pyramid') {
+                stepOneTitle.innerText = '# 1. Midjourney 纯视觉画面指令';
+            }
 
-# 任务目标
-请结合下方的【创作话题】，为我生成一张高度结构化的小红书信息图表，并直接出图。
-
-【创作话题】：${item.t}
-【话题内核】：${item.s}
-
-# 💡 核心策略：智能选角与"一主多副"多镜头演绎 (重点)
-请深入理解当前话题语境，**自主决定**画面中的登场人物组合。你可以选择使用我提供的图1（男）、图2（女），或者让他们共同出镜。
-★ 极其重要排版约束 ★：在一张海报中，选定的角色必须**多次出场**！
-1. 【中心主视觉】：在画面正中央，绘制一个画幅最大的主人物，摆出与话题核心情绪相关的代表性动作。
-2. 【周边小窗格】：在中心人物四周散落多个便利贴/小卡片（数量根据内容决定）。**在每一个小卡片内部，都必须画出该中心人物的“缩小版/分身/Q版”，由他们亲自演绎卡片中的具体场景**。
-
-# 🎨 核心排版与视觉约束：
-1. 【整体画风】：日系治愈系扁平漫画风、美式复古漫画报纸风，高级印刷质感。禁止写实。
-2. 【色彩基调】：复古温暖的做旧牛皮纸/奶油纸背景，搭配低饱和度的色彩，留白舒适。
-3. 【版式布局 (Magazine Layout)】：
-   - 顶部区域：超大黑体的醒目主标题（⚠️ 必须直接使用【创作话题】作为纯粹的标题，**绝对不要**在标题里擅自添加“干货盘点”、“知识合集”等任何多余字眼） + 补充说明的副标题。
-   - 中间视觉：巨大、细节丰富的中心主人物。
-   - 知识模块：使用带外框的对话气泡、圆角便利贴、虚线框等将四周的“小人物场景”包裹起来。
-4. 【尺寸比例】：竖版 3:4。
-
-# 🤖 执行要求：
-1. **内容拆解**：根据话题性质，自动拆解出若干个核心内容点，分配到四周的小卡片中。
-2. **选角分配**：自动决定使用哪一张参考图（图1或图2，或双人），并自动构思出 1 个“中心主人物动作”以及周围的“小窗格场景动作”。
-3. **直接出图**：请不要只输出文字提示词，请**直接调用你的绘画能力**生成图片！必须包含 "multiple panels", "one large character in the center surrounded by small versions of the same character doing different actions" 等约束语以实现一主多副排版。`;
+            document.getElementById('comic-text').innerText = generateFullComicPrompt(item, selectedStyle);
+            document.getElementById('copywrite-text').innerText = generateFullCopywritingPrompt(item, selectedStyle);
         }
 
-        function generateFullCopywritingPrompt(item) {
-            return `# 角色设定
-你是一位拥有百万粉丝的小红书爆款操盘手兼顶级文案大师。
+        function updateActiveStyleUI() {
+            document.querySelectorAll('.style-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            const activeCard = document.getElementById(selectedStyle);
+            if (activeCard) {
+                activeCard.classList.add('active');
+            }
+        }
+
+        function generateFullComicPrompt(item, style) {
+            const imageTopTitle = item.subt || item.t;
+            const topicDirection = item.s || item.t;
+            const hasSubtitle = !!item.hasSubtitle;
+
+            // 针对 治愈系扁平漫画风
+            if (style === 'style-manga') {
+                const numberingRequirement = hasSubtitle 
+                    ? "【序号要求】：卡片内的各个分点和卡片标题**绝对不需要**添加任何数字序号（如01, 02等），直接使用纯文本和插画呈现，追求更呼吸感的排版。"
+                    : "【序号要求】：卡片内的各个分点**必须强制添加醒目的数字序号**（例如：01, 02, 03, 04...，形式不限），以极大地增强画面的条理性和秩序感。";
+
+                return `# 角色设定
+你是一位精通小红书爆款信息图（Infographic）的顶级视觉设计师与 AI 艺术大师。
 
 # 任务目标
-请结合当前【创作话题】以及我们刚刚构思的【海报内容】，为其写一篇直接用于小红书发布的“笔记配文 (Caption)”。
+请结合下方的【创作话题】与【海报标题】，为我绘制并直接输出一张高度结构化、具有“一大带多小”演绎感的小红书干货科普信息图表。
 
-【创作话题】：${item.t}
-【基调】：${item.l}
+【创作话题】：${topicDirection} (基于此方向进行精细内容拆解)
+【海报最上方主标题】：${imageTopTitle} (⚠️ 必须直接在画布最顶部最显眼区域原样渲染，千万不要擅自添加任何类似“干货盘点”、“合集”等无用字眼)
 
-# ⚠️ 核心文案规范
-1. 黄金三秒标题：自带情绪和吸引力的简短标题，多用符号和数字。
-2. 提炼核心要点：将干货提炼为 3-4 个极其精简的要点（用 Emoji 标号）。
-3. 互动收尾：抛出开放式问题引导留言。
-4. 【极其重要】：全文总字数严格控制在 300 字左右！只需适当分段，绝不允许“一句一行”的过度碎化排版！
-5. 末尾附带 4-6 个高流量 #标签。`;
+# 💡 核心视觉：一主多副演绎
+1. 深入理解当前话题语境，自主在刚才提供给您的两张角色原图（“男_3.jpg”和“女_3.jpg”）中选择合适的主角：
+   - 可以是单独的男生、单独的女生，或两位共同出镜。AI有完全决策权。
+2. 【画面中心主视觉】：在海报正中央画出一个最大的主角色形象，其面部细节、穿着搭配必须完美保留原图“男_3.jpg”或“女_3.jpg”的一致性。
+3. 【周边环绕卡片】：在主角色外侧分布多格精致的小卡片和弹幕便利贴。每个卡片里不仅要写干货点，**还必须绘制同一个角色的“缩小版Q版分身”，让他们在卡片内生动做对应的情境动作**（例如看手机、叹气、举手加油等）。
+
+# 🎨 视觉风格与约束
+1. 【整体风格】：日系治愈扁平漫画风，带有颗粒感细腻的复古报纸印刷质地与手绘线条。
+2. 【色彩基调】：柔和、做旧的牛皮纸偏暖奶油色背景。局部采用墨绿、深蓝、温暖黄橘等低饱和撞色进行排版提亮。
+3. 【版式结构】：
+   - 顶部区域：大黑体海报主标题 + 极细辅助点缀标语。
+   - 中间视觉：核心人物主角半身插画，四周多格卡片环绕。
+   - ${numberingRequirement}
+4. 【画面尺寸】：竖版比例 --ar 3:4。
+
+# 🤖 执行要求
+请直接启动你的绘图功能，生成并输出最终具有完美文字排版结构的海报图！绝对不要只输出文本提示词！`;
+            }
+
+            // 针对 Midjourney 纯视觉画面指令
+            if (style === 'style-pyramid') {
+                const specMap = {
+                    "美妆护肤": "Macro close-up shot, flawless skin texture with subtle moisture, soft natural light, premium cosmetic packaging, pastel color palette, cinematic focus",
+                    "AI科技": "Futuristic clean office, high-tech devices, holographic interface, minimal aesthetic, neon accents, cinematic depth of field, 8k resolution",
+                    "副业搞钱": "Cozy workspace at golden hour, a laptop with profit graphs, a cup of specialty coffee, warm atmosphere, professional photography, organized desk"
+                };
+                const spec = specMap[item.cat] || "High-end commercial photography, cinematic lighting, eye-catching composition, 8k resolution, photorealistic";
+                return `Subject: Visual for ${imageTopTitle}\n\nPrompt: ${spec}, ${topicDirection} theme, clean and minimal style, vivid colors, depth of field --v 6.0 --ar 3:4 --stylize 250 --quality 2`;
+            }
+        }
+
+        function generateFullCopywritingPrompt(item, style) {
+            const mainTopicTitle = item.t; 
+            
+            // 基础结构化要求：禁止任何多余的连续空行加标签隔离
+            let styleSpecificReading = "";
+            if (style === 'style-manga') {
+                styleSpecificReading = `
+1. 观察海报中间的核心视觉，并使用你的视觉分析(OCR)能力，提取出海报四周环绕的各个“Q版小人物卡片”中的细分小标题（例如“01 别把熬夜当努力”等具体的拆解分点）。
+2. 将这些提取出的分点作为你本次小红书笔记的【核心论述分点】，结合海报中角色演绎的情感痛点展开撰写。`;
+            } else if (style === 'style-contrast') {
+                styleSpecificReading = `
+1. 观察海报中线左右对照的红蓝两栏内容，使用视觉识别提取出左右对比行（例如“❌ 超前消费” vs “✅ 先存后花”）。
+2. 在笔记中完美复刻这一对比，使用“❌ 避坑提醒 vs ✅ 正确解法”的格式，把对应行的内容作为你的段落分点论述。`;
+            } else if (style === 'style-pyramid') {
+                styleSpecificReading = `
+1. 请仔细观察生成的写实摄影首图中的核心视觉、光影氛围与场景布置。
+2. 提取画面传达的高级质感与主题基调，无需执着于从图中寻找文字，直接结合话题深刻的情绪洞察与自省痛点，发散撰写【核心论述分点】。`;
+            }
+
+            return `# 角色设定
+你是一位拥有百万粉丝的小红书爆款操盘手兼顶级图文文案大师。
+
+# 任务目标
+请结合下方的【核心大标题】，并且【直接阅读并识别我发给你的海报图片内容】，为我写一篇直接用于小红书发布的“笔记配文 (Caption)”。
+
+【核心大标题 & 笔记首图标题】：${mainTopicTitle}
+
+# 📝 识图提取分点
+请你仔细阅读、识读我在本次对话中发送给你的图片（即我们刚刚生成好的干货海报）：${styleSpecificReading}
+
+# ⚠️ 核心文案规范 (零空行、空格标签)
+1. 【黄金三秒标题】：根据大标题《${mainTopicTitle}》打造极具情绪共鸣、直击痛点的小红书标题。
+2. 【紧凑无空行段落】：
+   - 全文总字数严格控制在 300 字左右，语言要轻快、活泼、充满网感。
+   - 【🚨 强制排版规则 🚨】：全文绝对不能生成任何空行，段落与段落之间必须完全紧挨着，一个空行都不要有！不要进行每一句话的单句换行，保持高度紧凑、一体化的字里行间张力，提高阅读连贯性。
+3. 【互动收尾】：抛出开放式提问，引导评论区站队或分享看法。
+4. 【标签规范】：末尾附带 4-6 个高流量 #标签，【🚨 每一个 #标签 之间必须使用且只能使用一个空格进行隔开，绝对不能粘连在一起 🚨】。`;
         }
 
         function renderChart(scores) {
@@ -452,7 +600,7 @@
                 type: 'radar',
                 data: {
                     labels: ['视觉潜力', '情绪共鸣', '实用干货', '互动潜力'],
-                    datasets: [{ data: scores, backgroundColor: 'rgba(255, 36, 66, 0.2)', borderColor: '#ff2442', borderWidth: 3 }]
+                    datasets: [{ data: scores, backgroundColor: 'rgba(255, 36, 66, 0.15)', borderColor: '#ff2442', borderWidth: 3 }]
                 },
                 options: {
                     maintainAspectRatio: false,
@@ -470,7 +618,7 @@
             textArea.select();
             try {
                 document.execCommand('copy');
-                showToast("✅ 已成功复制指令！");
+                showToast("✅ 已成功复制指令，带上您的男女垫图发给AI绘图吧！");
             } catch (err) {
                 showToast("❌ 复制失败，请手动复制");
             }
